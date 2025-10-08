@@ -1,12 +1,210 @@
-// Update this page (the content is just a fallback if you fail to update the page)
+import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { supabase } from '@/integrations/supabase/client';
+import { VoiceRecorder } from '@/components/VoiceRecorder';
+import { NoteCard } from '@/components/NoteCard';
+import { NewNoteDialog } from '@/components/NewNoteDialog';
+import { Button } from '@/components/ui/button';
+import { LogOut, Mic } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
+
+interface Note {
+  id: string;
+  title: string | null;
+  content: string;
+  color: string;
+  created_at: string;
+}
 
 const Index = () => {
-  return (
-    <div className="flex min-h-screen items-center justify-center bg-background">
-      <div className="text-center">
-        <h1 className="mb-4 text-4xl font-bold">Welcome to Your Blank App</h1>
-        <p className="text-xl text-muted-foreground">Start building your amazing project here!</p>
+  const [notes, setNotes] = useState<Note[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [transcribedText, setTranscribedText] = useState('');
+  const navigate = useNavigate();
+  const { toast } = useToast();
+
+  useEffect(() => {
+    checkAuth();
+    fetchNotes();
+  }, []);
+
+  const checkAuth = async () => {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) {
+      navigate('/auth');
+    }
+  };
+
+  const fetchNotes = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('notes')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      setNotes(data || []);
+    } catch (error: any) {
+      toast({
+        title: "Hata",
+        description: error.message,
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleTranscriptionComplete = (text: string) => {
+    setTranscribedText(text);
+    setDialogOpen(true);
+  };
+
+  const handleSaveNote = async (title: string, content: string, color: string) => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('Kullanıcı bulunamadı');
+
+      const { error } = await supabase.from('notes').insert({
+        user_id: user.id,
+        title: title || null,
+        content,
+        color,
+      });
+
+      if (error) throw error;
+
+      toast({
+        title: "Başarılı!",
+        description: "Not kaydedildi.",
+      });
+
+      fetchNotes();
+    } catch (error: any) {
+      toast({
+        title: "Hata",
+        description: error.message,
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleDeleteNote = async (id: string) => {
+    try {
+      const { error } = await supabase.from('notes').delete().eq('id', id);
+      if (error) throw error;
+
+      toast({
+        title: "Silindi",
+        description: "Not silindi.",
+      });
+
+      setNotes(notes.filter(note => note.id !== id));
+    } catch (error: any) {
+      toast({
+        title: "Hata",
+        description: error.message,
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleUpdateNote = async (id: string, title: string, content: string) => {
+    try {
+      const { error } = await supabase
+        .from('notes')
+        .update({ title: title || null, content })
+        .eq('id', id);
+
+      if (error) throw error;
+
+      toast({
+        title: "Güncellendi",
+        description: "Not güncellendi.",
+      });
+
+      fetchNotes();
+    } catch (error: any) {
+      toast({
+        title: "Hata",
+        description: error.message,
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleSignOut = async () => {
+    await supabase.auth.signOut();
+    navigate('/auth');
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <p className="text-muted-foreground">Yükleniyor...</p>
       </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-primary/5 via-background to-accent/5">
+      <header className="border-b bg-card/50 backdrop-blur-sm sticky top-0 z-40">
+        <div className="container mx-auto px-4 py-4 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
+              <Mic className="w-5 h-5 text-primary" />
+            </div>
+            <div>
+              <h1 className="text-xl font-bold">Sesli Notlar</h1>
+              <p className="text-xs text-muted-foreground">
+                {notes.length} not
+              </p>
+            </div>
+          </div>
+          <Button variant="ghost" size="sm" onClick={handleSignOut}>
+            <LogOut className="h-4 w-4 mr-2" />
+            Çıkış
+          </Button>
+        </div>
+      </header>
+
+      <main className="container mx-auto px-4 py-8 pb-24">
+        {notes.length === 0 ? (
+          <div className="text-center py-16">
+            <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-primary/10 mb-4">
+              <Mic className="w-10 h-10 text-primary" />
+            </div>
+            <h2 className="text-2xl font-bold mb-2">Henüz notun yok</h2>
+            <p className="text-muted-foreground mb-8">
+              Aşağıdaki mikrofon butonuna basarak ilk notunu oluştur
+            </p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {notes.map((note) => (
+              <NoteCard
+                key={note.id}
+                id={note.id}
+                title={note.title}
+                content={note.content}
+                color={note.color}
+                onDelete={handleDeleteNote}
+                onUpdate={handleUpdateNote}
+              />
+            ))}
+          </div>
+        )}
+      </main>
+
+      <VoiceRecorder onTranscriptionComplete={handleTranscriptionComplete} />
+
+      <NewNoteDialog
+        open={dialogOpen}
+        onOpenChange={setDialogOpen}
+        initialContent={transcribedText}
+        onSave={handleSaveNote}
+      />
     </div>
   );
 };
