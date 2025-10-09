@@ -57,7 +57,8 @@ const Index = () => {
   };
 
   const handleTranscriptionComplete = (text: string) => {
-    setTranscribedText(text);
+    console.log('Transkripsiyon alındı:', text, 'uzunluk:', text?.length);
+    setTranscribedText(text || '');
     setDialogOpen(true);
   };
 
@@ -200,6 +201,7 @@ const Index = () => {
       <VoiceRecorder onTranscriptionComplete={handleTranscriptionComplete} />
 
       <NewNoteDialog
+        key={`${dialogOpen}-${transcribedText.length}`}
         open={dialogOpen}
         onOpenChange={setDialogOpen}
         initialContent={transcribedText}
