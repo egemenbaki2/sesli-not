@@ -58,6 +58,7 @@ export const VoiceRecorder = ({ onTranscriptionComplete }: VoiceRecorderProps) =
 
   const processAudio = async (audioBlob: Blob) => {
     setIsProcessing(true);
+    console.log('Ses işleniyor, boyut:', audioBlob.size);
 
     try {
       const reader = new FileReader();
@@ -70,19 +71,41 @@ export const VoiceRecorder = ({ onTranscriptionComplete }: VoiceRecorderProps) =
           throw new Error('Ses verisi işlenemedi');
         }
 
+        console.log('Base64 audio uzunluğu:', base64Audio.length);
+        console.log('Edge function çağrılıyor...');
+
         const { data, error } = await supabase.functions.invoke('transcribe-audio', {
           body: { audio: base64Audio },
         });
 
-        if (error) throw error;
+        console.log('Edge function yanıtı:', { data, error });
+
+        if (error) {
+          console.error('Edge function hatası:', error);
+          throw error;
+        }
+
+        if (data?.error) {
+          console.error('API hatası:', data.error);
+          throw new Error(data.error);
+        }
 
         if (data?.text) {
+          console.log('Transkripsiyon başarılı:', data.text);
           onTranscriptionComplete(data.text);
           toast({
             title: "Başarılı!",
             description: "Ses metne dönüştürüldü.",
           });
+        } else {
+          console.error('Metin bulunamadı:', data);
+          throw new Error('Transkripsiyon sonucu alınamadı');
         }
+      };
+
+      reader.onerror = (error) => {
+        console.error('FileReader hatası:', error);
+        throw new Error('Ses dosyası okunamadı');
       };
     } catch (error: any) {
       console.error('Transkripsiyon hatası:', error);

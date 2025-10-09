@@ -41,14 +41,25 @@ serve(async (req) => {
   }
 
   try {
+    console.log('İstek alındı');
     const { audio } = await req.json();
     
     if (!audio) {
+      console.error('Ses verisi boş');
       throw new Error('Ses verisi bulunamadı');
+    }
+
+    console.log('Ses verisi alındı, uzunluk:', audio.length);
+    
+    const apiKey = Deno.env.get('OPENAI_API_KEY');
+    if (!apiKey) {
+      console.error('OPENAI_API_KEY bulunamadı');
+      throw new Error('API anahtarı yapılandırılmamış');
     }
 
     console.log('Ses işleniyor...');
     const binaryAudio = processBase64Chunks(audio);
+    console.log('Binary ses boyutu:', binaryAudio.length);
     
     const formData = new FormData();
     const blob = new Blob([binaryAudio], { type: 'audio/webm' });
@@ -60,19 +71,22 @@ serve(async (req) => {
     const response = await fetch('https://api.openai.com/v1/audio/transcriptions', {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${Deno.env.get('OPENAI_API_KEY')}`,
+        'Authorization': `Bearer ${apiKey}`,
       },
       body: formData,
     });
 
+    console.log('OpenAI yanıt durumu:', response.status);
+
     if (!response.ok) {
       const errorText = await response.text();
-      console.error('OpenAI API hatası:', errorText);
-      throw new Error(`OpenAI API hatası: ${errorText}`);
+      console.error('OpenAI API hatası:', response.status, errorText);
+      throw new Error(`OpenAI API hatası (${response.status}): ${errorText}`);
     }
 
     const result = await response.json();
-    console.log('Transkripsiyon başarılı:', result.text);
+    console.log('Transkripsiyon başarılı, metin uzunluğu:', result.text?.length || 0);
+    console.log('Metin:', result.text);
 
     return new Response(
       JSON.stringify({ text: result.text }),
@@ -80,9 +94,12 @@ serve(async (req) => {
     );
 
   } catch (error) {
-    console.error('Hata:', error);
+    console.error('Edge function hatası:', error);
+    const errorMessage = error instanceof Error ? error.message : 'Bilinmeyen hata';
+    console.error('Hata mesajı:', errorMessage);
+    
     return new Response(
-      JSON.stringify({ error: error instanceof Error ? error.message : 'Bilinmeyen hata' }),
+      JSON.stringify({ error: errorMessage }),
       {
         status: 500,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
