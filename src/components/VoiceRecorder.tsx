@@ -61,52 +61,52 @@ export const VoiceRecorder = ({ onTranscriptionComplete }: VoiceRecorderProps) =
     console.log('Ses işleniyor, boyut:', audioBlob.size);
 
     try {
-      const reader = new FileReader();
-      reader.readAsDataURL(audioBlob);
-      
-      reader.onloadend = async () => {
-        const base64Audio = reader.result?.toString().split(',')[1];
-        
-        if (!base64Audio) {
-          throw new Error('Ses verisi işlenemedi');
-        }
+      const base64Audio = await new Promise<string>((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          try {
+            const result = reader.result?.toString() || '';
+            const base64 = result.split(',')[1];
+            if (!base64) return reject(new Error('Ses verisi işlenemedi'));
+            resolve(base64);
+          } catch (e) {
+            reject(e);
+          }
+        };
+        reader.onerror = (e) => reject(new Error('Ses dosyası okunamadı'));
+        reader.readAsDataURL(audioBlob);
+      });
 
-        console.log('Base64 audio uzunluğu:', base64Audio.length);
-        console.log('Edge function çağrılıyor...');
+      console.log('Base64 audio uzunluğu:', base64Audio.length);
+      console.log('Edge function çağrılıyor...');
 
-        const { data, error } = await supabase.functions.invoke('transcribe-audio', {
-          body: { audio: base64Audio },
-        });
+      const { data, error } = await supabase.functions.invoke('transcribe-audio', {
+        body: { audio: base64Audio },
+      });
 
-        console.log('Edge function yanıtı:', { data, error });
+      console.log('Edge function yanıtı:', { data, error });
 
-        if (error) {
-          console.error('Edge function hatası:', error);
-          throw error;
-        }
+      if (error) {
+        console.error('Edge function hatası:', error);
+        throw error;
+      }
 
-        if (data?.error) {
-          console.error('API hatası:', data.error);
-          throw new Error(data.error);
-        }
+      if (data?.error) {
+        console.error('API hatası:', data.error);
+        throw new Error(data.error);
+      }
 
-        if (data?.text) {
-          console.log('Transkripsiyon başarılı:', data.text);
-          onTranscriptionComplete(data.text);
-          toast({
-            title: "Başarılı!",
-            description: "Ses metne dönüştürüldü.",
-          });
-        } else {
-          console.error('Metin bulunamadı:', data);
-          throw new Error('Transkripsiyon sonucu alınamadı');
-        }
-      };
+      if (!data?.text) {
+        console.error('Metin bulunamadı:', data);
+        throw new Error('Transkripsiyon sonucu alınamadı');
+      }
 
-      reader.onerror = (error) => {
-        console.error('FileReader hatası:', error);
-        throw new Error('Ses dosyası okunamadı');
-      };
+      console.log('Transkripsiyon başarılı:', data.text);
+      onTranscriptionComplete(data.text);
+      toast({
+        title: "Başarılı!",
+        description: "Ses metne dönüştürüldü.",
+      });
     } catch (error: any) {
       console.error('Transkripsiyon hatası:', error);
       toast({
