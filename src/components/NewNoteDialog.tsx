@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
   Dialog,
   DialogContent,
@@ -44,6 +44,13 @@ export const NewNoteDialog = ({
   const [title, setTitle] = useState('');
   const [content, setContent] = useState(initialContent);
   const [selectedColor, setSelectedColor] = useState('blue');
+
+  // initialContent değiştiğinde veya dialog açıldığında içeriği senkronize et
+  useEffect(() => {
+    if (open) {
+      setContent(initialContent || '');
+    }
+  }, [initialContent, open]);
 
   const handleSave = () => {
     onSave(title, content, selectedColor);
@@ -101,7 +108,7 @@ export const NewNoteDialog = ({
           </div>
 
           <div className="flex gap-2">
-            <Button onClick={handleSave} className="flex-1">
+            <Button onClick={handleSave} className="flex-1" disabled={!content.trim()}>
               Kaydet
             </Button>
             <Button
