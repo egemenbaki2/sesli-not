@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Mic, Square } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
@@ -11,9 +11,31 @@ interface VoiceRecorderProps {
 export const VoiceRecorder = ({ onTranscriptionComplete }: VoiceRecorderProps) => {
   const [isRecording, setIsRecording] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [recordingTime, setRecordingTime] = useState(0);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const chunksRef = useRef<Blob[]>([]);
+  const timerRef = useRef<NodeJS.Timeout | null>(null);
   const { toast } = useToast();
+
+  useEffect(() => {
+    if (isRecording) {
+      timerRef.current = setInterval(() => {
+        setRecordingTime((prev) => prev + 1);
+      }, 1000);
+    } else {
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+        timerRef.current = null;
+      }
+      setRecordingTime(0);
+    }
+
+    return () => {
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+      }
+    };
+  }, [isRecording]);
 
   const startRecording = async () => {
     try {
@@ -119,33 +141,49 @@ export const VoiceRecorder = ({ onTranscriptionComplete }: VoiceRecorderProps) =
     }
   };
 
+  const formatTime = (seconds: number) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins}:${secs.toString().padStart(2, '0')}`;
+  };
+
   return (
     <div className="fixed bottom-8 left-1/2 -translate-x-1/2 z-50">
-      {!isRecording ? (
-        <Button
-          size="lg"
-          onClick={startRecording}
-          disabled={isProcessing}
-          className="h-16 w-16 rounded-full shadow-2xl hover:scale-110 transition-all duration-200"
-        >
-          <Mic className="h-8 w-8" />
-        </Button>
-      ) : (
-        <Button
-          size="lg"
-          onClick={stopRecording}
-          variant="destructive"
-          className="h-16 w-16 rounded-full shadow-2xl animate-pulse-slow"
-        >
-          <Square className="h-8 w-8" />
-        </Button>
-      )}
-      
-      {isProcessing && (
-        <div className="absolute -top-12 left-1/2 -translate-x-1/2 whitespace-nowrap">
-          <p className="text-sm text-muted-foreground">İşleniyor...</p>
-        </div>
-      )}
+      <div className="flex flex-col items-center gap-3">
+        {isRecording && (
+          <div className="bg-card/95 backdrop-blur-sm border rounded-full px-6 py-2 shadow-lg">
+            <p className="text-sm font-medium text-destructive animate-pulse">
+              Kayıt yapılıyor • {formatTime(recordingTime)}
+            </p>
+          </div>
+        )}
+        
+        {!isRecording ? (
+          <Button
+            size="lg"
+            onClick={startRecording}
+            disabled={isProcessing}
+            className="h-20 w-20 rounded-full shadow-2xl hover:scale-110 transition-all duration-300 bg-gradient-to-br from-primary to-primary/80 hover:from-primary hover:to-primary/70"
+          >
+            <Mic className="h-10 w-10" />
+          </Button>
+        ) : (
+          <Button
+            size="lg"
+            onClick={stopRecording}
+            variant="destructive"
+            className="h-20 w-20 rounded-full shadow-2xl hover:scale-110 transition-all duration-300"
+          >
+            <Square className="h-10 w-10 fill-current" />
+          </Button>
+        )}
+        
+        {isProcessing && (
+          <div className="bg-card/95 backdrop-blur-sm border rounded-full px-6 py-2 shadow-lg">
+            <p className="text-sm font-medium text-muted-foreground">İşleniyor...</p>
+          </div>
+        )}
+      </div>
     </div>
   );
 };
