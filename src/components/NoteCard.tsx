@@ -1,9 +1,14 @@
 import { useState } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Trash2, Edit2, Check, X } from 'lucide-react';
+import { Trash2, Edit2, Check, X, Palette } from 'lucide-react';
 import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/components/ui/popover';
 
 interface NoteCardProps {
   id: string;
@@ -12,7 +17,17 @@ interface NoteCardProps {
   color: string;
   onDelete: (id: string) => void;
   onUpdate: (id: string, title: string, content: string) => void;
+  onColorChange: (id: string, color: string) => void;
 }
+
+const colors = [
+  { name: 'Mavi', value: 'blue' },
+  { name: 'Yeşil', value: 'green' },
+  { name: 'Sarı', value: 'yellow' },
+  { name: 'Kırmızı', value: 'red' },
+  { name: 'Mor', value: 'purple' },
+  { name: 'Turuncu', value: 'orange' },
+];
 
 const colorClasses: Record<string, string> = {
   blue: 'bg-blue-100 border-blue-300 dark:bg-blue-950 dark:border-blue-800',
@@ -23,6 +38,15 @@ const colorClasses: Record<string, string> = {
   orange: 'bg-orange-100 border-orange-300 dark:bg-orange-950 dark:border-orange-800',
 };
 
+const colorButtonClasses: Record<string, string> = {
+  blue: 'bg-blue-500',
+  green: 'bg-green-500',
+  yellow: 'bg-yellow-500',
+  red: 'bg-red-500',
+  purple: 'bg-purple-500',
+  orange: 'bg-orange-500',
+};
+
 export const NoteCard = ({
   id,
   title,
@@ -30,6 +54,7 @@ export const NoteCard = ({
   color,
   onDelete,
   onUpdate,
+  onColorChange,
 }: NoteCardProps) => {
   const [isEditing, setIsEditing] = useState(false);
   const [editTitle, setEditTitle] = useState(title || '');
@@ -89,6 +114,34 @@ export const NoteCard = ({
             >
               <Edit2 className="h-4 w-4" />
             </Button>
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  className="hover:bg-background/50"
+                >
+                  <Palette className="h-4 w-4" />
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-3">
+                <div className="flex gap-2">
+                  {colors.map((c) => (
+                    <button
+                      key={c.value}
+                      type="button"
+                      onClick={() => onColorChange(id, c.value)}
+                      className={`w-8 h-8 rounded-full ${colorButtonClasses[c.value]} ${
+                        color === c.value
+                          ? 'ring-2 ring-offset-2 ring-primary'
+                          : ''
+                      } hover:scale-110 transition-transform`}
+                      title={c.name}
+                    />
+                  ))}
+                </div>
+              </PopoverContent>
+            </Popover>
             <Button
               size="sm"
               variant="ghost"

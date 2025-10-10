@@ -9,12 +9,26 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
+import { supabase } from '@/integrations/supabase/client';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+
+interface Category {
+  id: string;
+  name: string;
+  color: string;
+}
 
 interface NewNoteDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   initialContent: string;
-  onSave: (title: string, content: string, color: string) => void;
+  onSave: (title: string, content: string, color: string, categoryId?: string) => void;
 }
 
 const colors = [
@@ -44,19 +58,37 @@ export const NewNoteDialog = ({
   const [title, setTitle] = useState('');
   const [content, setContent] = useState(initialContent);
   const [selectedColor, setSelectedColor] = useState('blue');
+  const [selectedCategory, setSelectedCategory] = useState<string>('');
+  const [categories, setCategories] = useState<Category[]>([]);
 
   // initialContent değiştiğinde veya dialog açıldığında içeriği senkronize et
   useEffect(() => {
     if (open) {
       setContent(initialContent || '');
+      fetchCategories();
     }
   }, [initialContent, open]);
 
+  const fetchCategories = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('categories')
+        .select('*')
+        .order('name');
+
+      if (error) throw error;
+      setCategories(data || []);
+    } catch (error) {
+      console.error('Kategoriler yüklenemedi:', error);
+    }
+  };
+
   const handleSave = () => {
-    onSave(title, content, selectedColor);
+    onSave(title, content, selectedColor, selectedCategory || undefined);
     setTitle('');
     setContent('');
     setSelectedColor('blue');
+    setSelectedCategory('');
     onOpenChange(false);
   };
 
@@ -86,6 +118,28 @@ export const NewNoteDialog = ({
               placeholder="Not içeriği..."
               rows={6}
             />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="category">Kategori (opsiyonel)</Label>
+            <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+              <SelectTrigger id="category">
+                <SelectValue placeholder="Kategori seç..." />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="none">Kategori yok</SelectItem>
+                {categories.map((category) => (
+                  <SelectItem key={category.id} value={category.id}>
+                    <div className="flex items-center gap-2">
+                      <div
+                        className={`w-3 h-3 rounded-full ${colorClasses[category.color]}`}
+                      />
+                      {category.name}
+                    </div>
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
 
           <div className="space-y-2">

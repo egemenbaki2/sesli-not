@@ -14,8 +14,33 @@ export type Database = {
   }
   public: {
     Tables: {
+      categories: {
+        Row: {
+          color: string | null
+          created_at: string
+          id: string
+          name: string
+          user_id: string
+        }
+        Insert: {
+          color?: string | null
+          created_at?: string
+          id?: string
+          name: string
+          user_id: string
+        }
+        Update: {
+          color?: string | null
+          created_at?: string
+          id?: string
+          name?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       notes: {
         Row: {
+          category_id: string | null
           color: string | null
           content: string
           created_at: string
@@ -25,6 +50,7 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          category_id?: string | null
           color?: string | null
           content: string
           created_at?: string
@@ -34,6 +60,7 @@ export type Database = {
           user_id: string
         }
         Update: {
+          category_id?: string | null
           color?: string | null
           content?: string
           created_at?: string
@@ -42,7 +69,15 @@ export type Database = {
           updated_at?: string
           user_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "notes_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "categories"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {
