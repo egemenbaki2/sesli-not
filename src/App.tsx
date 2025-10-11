@@ -4,7 +4,14 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { ThemeProvider } from "@/providers/ThemeProvider";
+import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
+import { AppSidebar } from "@/components/AppSidebar";
 import Index from "./pages/Index";
+import Settings from "./pages/Settings";
+import Archive from "./pages/Archive";
+import Trash from "./pages/Trash";
+import Reminders from "./pages/Reminders";
+import Tags from "./pages/Tags";
 import Auth from "./pages/Auth";
 import NotFound from "./pages/NotFound";
 
@@ -18,10 +25,28 @@ const App = () => (
         <Sonner />
         <BrowserRouter>
           <Routes>
-            <Route path="/" element={<Index />} />
             <Route path="/auth" element={<Auth />} />
-            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-            <Route path="*" element={<NotFound />} />
+            <Route
+              path="*"
+              element={
+                <SidebarProvider>
+                  <div className="min-h-screen flex w-full">
+                    <AppSidebar />
+                    <main className="flex-1">
+                      <Routes>
+                        <Route path="/" element={<Index />} />
+                        <Route path="/settings" element={<Settings />} />
+                        <Route path="/archive" element={<Archive />} />
+                        <Route path="/trash" element={<Trash />} />
+                        <Route path="/reminders" element={<Reminders />} />
+                        <Route path="/tags" element={<Tags />} />
+                        <Route path="*" element={<NotFound />} />
+                      </Routes>
+                    </main>
+                  </div>
+                </SidebarProvider>
+              }
+            />
           </Routes>
         </BrowserRouter>
       </TooltipProvider>

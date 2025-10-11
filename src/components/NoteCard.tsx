@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Trash2, Edit2, Check, X, Palette } from 'lucide-react';
+import { Trash2, Edit2, Check, X, Palette, Archive, MoreVertical } from 'lucide-react';
 import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
 import {
@@ -9,6 +9,12 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 
 interface NoteCardProps {
   id: string;
@@ -18,6 +24,8 @@ interface NoteCardProps {
   onDelete: (id: string) => void;
   onUpdate: (id: string, title: string, content: string) => void;
   onColorChange: (id: string, color: string) => void;
+  onArchive?: (id: string) => void;
+  showArchive?: boolean;
 }
 
 const colors = [
@@ -55,6 +63,8 @@ export const NoteCard = ({
   onDelete,
   onUpdate,
   onColorChange,
+  onArchive,
+  showArchive = true,
 }: NoteCardProps) => {
   const [isEditing, setIsEditing] = useState(false);
   const [editTitle, setEditTitle] = useState(title || '');
@@ -105,7 +115,7 @@ export const NoteCard = ({
           <p className="text-sm text-foreground/80 whitespace-pre-wrap mb-4">
             {content}
           </p>
-          <div className="flex gap-2">
+          <div className="flex gap-2 items-center">
             <Button
               size="sm"
               variant="ghost"
@@ -142,14 +152,32 @@ export const NoteCard = ({
                 </div>
               </PopoverContent>
             </Popover>
-            <Button
-              size="sm"
-              variant="ghost"
-              onClick={() => onDelete(id)}
-              className="hover:bg-destructive/10 hover:text-destructive"
-            >
-              <Trash2 className="h-4 w-4" />
-            </Button>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  className="hover:bg-background/50 ml-auto"
+                >
+                  <MoreVertical className="h-4 w-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                {showArchive && onArchive && (
+                  <DropdownMenuItem onClick={() => onArchive(id)}>
+                    <Archive className="h-4 w-4 mr-2" />
+                    Arşivle
+                  </DropdownMenuItem>
+                )}
+                <DropdownMenuItem
+                  onClick={() => onDelete(id)}
+                  className="text-destructive"
+                >
+                  <Trash2 className="h-4 w-4 mr-2" />
+                  Sil
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
         </>
       )}

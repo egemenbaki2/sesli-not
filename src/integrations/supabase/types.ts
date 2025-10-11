@@ -38,33 +38,80 @@ export type Database = {
         }
         Relationships: []
       }
+      checklist_items: {
+        Row: {
+          checked: boolean | null
+          content: string
+          created_at: string
+          id: string
+          note_id: string
+          position: number
+        }
+        Insert: {
+          checked?: boolean | null
+          content: string
+          created_at?: string
+          id?: string
+          note_id: string
+          position: number
+        }
+        Update: {
+          checked?: boolean | null
+          content?: string
+          created_at?: string
+          id?: string
+          note_id?: string
+          position?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "checklist_items_note_id_fkey"
+            columns: ["note_id"]
+            isOneToOne: false
+            referencedRelation: "notes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       notes: {
         Row: {
+          archived: boolean | null
           category_id: string | null
           color: string | null
           content: string
           created_at: string
+          deleted: boolean | null
           id: string
+          is_checklist: boolean | null
+          reminder_time: string | null
           title: string | null
           updated_at: string
           user_id: string
         }
         Insert: {
+          archived?: boolean | null
           category_id?: string | null
           color?: string | null
           content: string
           created_at?: string
+          deleted?: boolean | null
           id?: string
+          is_checklist?: boolean | null
+          reminder_time?: string | null
           title?: string | null
           updated_at?: string
           user_id: string
         }
         Update: {
+          archived?: boolean | null
           category_id?: string | null
           color?: string | null
           content?: string
           created_at?: string
+          deleted?: boolean | null
           id?: string
+          is_checklist?: boolean | null
+          reminder_time?: string | null
           title?: string | null
           updated_at?: string
           user_id?: string
@@ -78,6 +125,48 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      settings: {
+        Row: {
+          add_new_items_to_bottom: boolean | null
+          afternoon_reminder_time: string | null
+          created_at: string
+          evening_reminder_time: string | null
+          id: string
+          morning_reminder_time: string | null
+          move_checked_items_to_bottom: boolean | null
+          sharing_enabled: boolean | null
+          show_rich_link_previews: boolean | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          add_new_items_to_bottom?: boolean | null
+          afternoon_reminder_time?: string | null
+          created_at?: string
+          evening_reminder_time?: string | null
+          id?: string
+          morning_reminder_time?: string | null
+          move_checked_items_to_bottom?: boolean | null
+          sharing_enabled?: boolean | null
+          show_rich_link_previews?: boolean | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          add_new_items_to_bottom?: boolean | null
+          afternoon_reminder_time?: string | null
+          created_at?: string
+          evening_reminder_time?: string | null
+          id?: string
+          morning_reminder_time?: string | null
+          move_checked_items_to_bottom?: boolean | null
+          sharing_enabled?: boolean | null
+          show_rich_link_previews?: boolean | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
       }
     }
     Views: {

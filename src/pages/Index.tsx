@@ -6,10 +6,13 @@ import { NoteCard } from '@/components/NoteCard';
 import { NewNoteDialog } from '@/components/NewNoteDialog';
 import { CategoryManager } from '@/components/CategoryManager';
 import { ThemeToggle } from '@/components/ThemeToggle';
+import { SearchBar } from '@/components/SearchBar';
 import { Button } from '@/components/ui/button';
-import { LogOut, Mic } from 'lucide-react';
+import { LogOut, Mic, Menu } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Badge } from '@/components/ui/badge';
+import { useSidebar } from '@/components/ui/sidebar';
+import Masonry from 'react-masonry-css';
 
 interface Category {
   id: string;
@@ -34,8 +37,10 @@ const Index = () => {
   const [transcribedText, setTranscribedText] = useState('');
   const [selectedCategoryFilter, setSelectedCategoryFilter] = useState<string | null>(null);
   const [categories, setCategories] = useState<Category[]>([]);
+  const [searchQuery, setSearchQuery] = useState('');
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { toggleSidebar } = useSidebar();
 
   useEffect(() => {
     checkAuth();
@@ -55,6 +60,8 @@ const Index = () => {
       const { data, error } = await supabase
         .from('notes')
         .select('*, categories(*)')
+        .eq('archived', false)
+        .eq('deleted', false)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
@@ -122,12 +129,16 @@ const Index = () => {
 
   const handleDeleteNote = async (id: string) => {
     try {
-      const { error } = await supabase.from('notes').delete().eq('id', id);
+      const { error } = await supabase
+        .from('notes')
+        .update({ deleted: true })
+        .eq('id', id);
+      
       if (error) throw error;
 
       toast({
-        title: "Silindi",
-        description: "Not silindi.",
+        title: "Çöp kutusuna taşındı",
+        description: "Not çöp kutusuna taşındı.",
       });
 
       setNotes(notes.filter(note => note.id !== id));
@@ -188,14 +199,51 @@ const Index = () => {
     }
   };
 
+  const handleArchive = async (id: string) => {
+    try {
+      const { error } = await supabase
+        .from('notes')
+        .update({ archived: true })
+        .eq('id', id);
+
+      if (error) throw error;
+
+      toast({
+        title: "Arşivlendi",
+        description: "Not arşivlendi.",
+      });
+
+      setNotes(notes.filter(note => note.id !== id));
+    } catch (error: any) {
+      toast({
+        title: "Hata",
+        description: error.message,
+        variant: "destructive",
+      });
+    }
+  };
+
   const handleSignOut = async () => {
     await supabase.auth.signOut();
     navigate('/auth');
   };
 
-  const filteredNotes = selectedCategoryFilter
-    ? notes.filter(note => note.category_id === selectedCategoryFilter)
-    : notes;
+  const filteredNotes = notes.filter(note => {
+    const matchesCategory = selectedCategoryFilter
+      ? note.category_id === selectedCategoryFilter
+      : true;
+    const matchesSearch = searchQuery
+      ? note.content.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        note.title?.toLowerCase().includes(searchQuery.toLowerCase())
+      : true;
+    return matchesCategory && matchesSearch;
+  });
+
+  const breakpointColumns = {
+    default: 3,
+    1024: 2,
+    640: 1,
+  };
 
   if (loading) {
     return (
@@ -208,26 +256,32 @@ const Index = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-primary/5 via-background to-accent/5">
       <header className="border-b bg-card/50 backdrop-blur-sm sticky top-0 z-40">
-        <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
-              <Mic className="w-5 h-5 text-primary" />
+        <div className="container mx-auto px-4 py-4">
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-3">
+              <Button variant="ghost" size="icon" onClick={toggleSidebar}>
+                <Menu className="h-5 w-5" />
+              </Button>
+              <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
+                <Mic className="w-5 h-5 text-primary" />
+              </div>
+              <div>
+                <h1 className="text-xl font-bold">Sesli Notlar</h1>
+                <p className="text-xs text-muted-foreground">
+                  {filteredNotes.length} not
+                </p>
+              </div>
             </div>
-            <div>
-              <h1 className="text-xl font-bold">Sesli Notlar</h1>
-              <p className="text-xs text-muted-foreground">
-                {filteredNotes.length} not
-              </p>
+            <div className="flex items-center gap-2">
+              <CategoryManager onCategoriesChange={fetchCategories} />
+              <ThemeToggle />
+              <Button variant="ghost" size="sm" onClick={handleSignOut}>
+                <LogOut className="h-4 w-4 mr-2" />
+                Çıkış
+              </Button>
             </div>
           </div>
-          <div className="flex items-center gap-2">
-            <CategoryManager onCategoriesChange={fetchCategories} />
-            <ThemeToggle />
-            <Button variant="ghost" size="sm" onClick={handleSignOut}>
-              <LogOut className="h-4 w-4 mr-2" />
-              Çıkış
-            </Button>
-          </div>
+          <SearchBar value={searchQuery} onChange={setSearchQuery} />
         </div>
       </header>
 
@@ -272,20 +326,26 @@ const Index = () => {
             </p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <Masonry
+            breakpointCols={breakpointColumns}
+            className="flex gap-4 -ml-4"
+            columnClassName="pl-4 bg-clip-padding"
+          >
             {filteredNotes.map((note) => (
-              <NoteCard
-                key={note.id}
-                id={note.id}
-                title={note.title}
-                content={note.content}
-                color={note.color}
-                onDelete={handleDeleteNote}
-                onUpdate={handleUpdateNote}
-                onColorChange={handleColorChange}
-              />
+              <div key={note.id} className="mb-4">
+                <NoteCard
+                  id={note.id}
+                  title={note.title}
+                  content={note.content}
+                  color={note.color}
+                  onDelete={handleDeleteNote}
+                  onUpdate={handleUpdateNote}
+                  onColorChange={handleColorChange}
+                  onArchive={handleArchive}
+                />
+              </div>
             ))}
-          </div>
+          </Masonry>
         )}
       </main>
 
