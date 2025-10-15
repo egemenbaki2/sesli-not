@@ -41,6 +41,8 @@ const Index = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const { toggleSidebar } = useSidebar();
+  const [userEmail, setUserEmail] = useState<string>("");
+  const [userId, setUserId] = useState<string>("");
 
   useEffect(() => {
     checkAuth();
@@ -72,14 +74,23 @@ const Index = () => {
     const { data: { session } } = await supabase.auth.getSession();
     if (!session) {
       navigate('/auth');
+      return;
     }
+    setUserEmail(session.user.email ?? "");
+    setUserId(session.user.id);
   };
 
   const fetchNotes = async () => {
     try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        setNotes([]);
+        return;
+      }
       const { data, error } = await supabase
         .from('notes')
         .select('*, categories(*)')
+        .eq('user_id', user.id)
         .eq('archived', false)
         .eq('deleted', false)
         .order('created_at', { ascending: false });
@@ -110,6 +121,17 @@ const Index = () => {
       console.error('Kategoriler yüklenemedi:', error);
     }
   };
+
+  // Refetch when page/tab becomes visible (helps cross-device sync)
+  useEffect(() => {
+    const onVisibility = () => {
+      if (document.visibilityState === 'visible') {
+        fetchNotes();
+      }
+    };
+    document.addEventListener('visibilitychange', onVisibility);
+    return () => document.removeEventListener('visibilitychange', onVisibility);
+  }, []);
 
   const handleTranscriptionComplete = (text: string) => {
     console.log('Transkripsiyon alındı:', text, 'uzunluk:', text?.length);
@@ -274,7 +296,7 @@ const Index = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-primary/5 via-background to-accent/5">
+    <div className="min-h-screen bg-gradient-to-br from-primary/5 via-background to-accent/5" role="main">
       <header className="border-b bg-card/50 backdrop-blur-sm sticky top-0 z-40">
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between mb-4">
@@ -293,6 +315,10 @@ const Index = () => {
               </div>
             </div>
             <div className="flex items-center gap-2">
+              {userEmail && (
+                <Badge variant="outline" className="hidden sm:inline-flex">{userEmail}</Badge>
+              )}
+              <Button variant="outline" size="sm" onClick={fetchNotes}>Yenile</Button>
               <CategoryManager onCategoriesChange={fetchCategories} />
               <ThemeToggle />
               <Button variant="ghost" size="sm" onClick={handleSignOut}>
