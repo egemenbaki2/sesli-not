@@ -8,76 +8,76 @@ All colors MUST be HSL.
 
 @layer base {
   :root {
-    --background: 220 25% 97%;
-    --foreground: 220 15% 20%;
+    --background: 210 20% 98%;
+    --foreground: 215 25% 15%;
 
     --card: 0 0% 100%;
-    --card-foreground: 220 15% 20%;
+    --card-foreground: 215 25% 15%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 220 15% 20%;
+    --popover-foreground: 215 25% 15%;
 
-    --primary: 262 83% 58%;
+    --primary: 180 85% 45%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 220 14% 96%;
-    --secondary-foreground: 220 15% 20%;
+    --secondary: 210 17% 95%;
+    --secondary-foreground: 215 25% 15%;
 
-    --muted: 220 14% 96%;
-    --muted-foreground: 220 10% 46%;
+    --muted: 210 17% 95%;
+    --muted-foreground: 215 15% 45%;
 
-    --accent: 198 93% 60%;
+    --accent: 35 95% 60%;
     --accent-foreground: 0 0% 100%;
 
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 220 13% 91%;
-    --input: 220 13% 91%;
-    --ring: 262 83% 58%;
+    --border: 210 15% 90%;
+    --input: 210 15% 90%;
+    --ring: 180 85% 45%;
 
     --radius: 0.75rem;
 
     /* Note colors */
-    --note-blue: 221 83% 53%;
-    --note-green: 142 76% 36%;
-    --note-yellow: 48 96% 53%;
+    --note-blue: 210 100% 60%;
+    --note-green: 145 70% 45%;
+    --note-yellow: 45 95% 60%;
     --note-red: 0 84% 60%;
-    --note-purple: 262 83% 58%;
-    --note-orange: 25 95% 53%;
+    --note-purple: 270 75% 65%;
+    --note-orange: 30 95% 60%;
     
     /* Animations */
     --pulse-slow: pulse-slow 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
   }
 
   .dark {
-    --background: 220 26% 14%;
-    --foreground: 220 10% 90%;
+    --background: 215 30% 8%;
+    --foreground: 210 15% 92%;
 
-    --card: 220 26% 18%;
-    --card-foreground: 220 10% 90%;
+    --card: 215 28% 12%;
+    --card-foreground: 210 15% 92%;
 
-    --popover: 220 26% 18%;
-    --popover-foreground: 220 10% 90%;
+    --popover: 215 28% 12%;
+    --popover-foreground: 210 15% 92%;
 
-    --primary: 262 83% 58%;
-    --primary-foreground: 0 0% 100%;
+    --primary: 180 80% 50%;
+    --primary-foreground: 215 30% 8%;
 
-    --secondary: 220 20% 25%;
-    --secondary-foreground: 220 10% 90%;
+    --secondary: 215 25% 18%;
+    --secondary-foreground: 210 15% 92%;
 
-    --muted: 220 20% 25%;
-    --muted-foreground: 220 10% 65%;
+    --muted: 215 25% 18%;
+    --muted-foreground: 210 15% 70%;
 
-    --accent: 198 93% 60%;
-    --accent-foreground: 0 0% 100%;
+    --accent: 35 90% 55%;
+    --accent-foreground: 215 30% 8%;
 
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 220 20% 25%;
-    --input: 220 20% 25%;
-    --ring: 262 83% 58%;
+    --border: 215 25% 20%;
+    --input: 215 25% 20%;
+    --ring: 180 80% 50%;
   }
 }
 
