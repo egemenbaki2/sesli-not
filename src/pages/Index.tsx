@@ -46,6 +46,26 @@ const Index = () => {
     checkAuth();
     fetchNotes();
     fetchCategories();
+
+    // Realtime subscription for notes
+    const notesChannel = supabase
+      .channel('notes-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'notes',
+        },
+        () => {
+          fetchNotes();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(notesChannel);
+    };
   }, []);
 
   const checkAuth = async () => {
