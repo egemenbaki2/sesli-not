@@ -163,18 +163,18 @@ export const VoiceRecorder = ({ onTranscriptionComplete }: VoiceRecorderProps) =
             size="lg"
             onClick={startRecording}
             disabled={isProcessing}
-            className="h-20 w-20 rounded-full shadow-2xl hover:scale-110 transition-all duration-300 bg-gradient-to-br from-primary to-primary/80 hover:from-primary hover:to-primary/70"
+            className="h-28 w-28 rounded-full shadow-2xl hover:scale-110 transition-all duration-300 bg-destructive hover:bg-destructive/90"
           >
-            <Mic className="h-10 w-10" />
+            <Mic className="h-14 w-14" />
           </Button>
         ) : (
           <Button
             size="lg"
             onClick={stopRecording}
             variant="destructive"
-            className="h-20 w-20 rounded-full shadow-2xl hover:scale-110 transition-all duration-300"
+            className="h-28 w-28 rounded-full shadow-2xl transition-all duration-300 animate-pulse-slow hover:animate-none hover:scale-110"
           >
-            <Square className="h-10 w-10 fill-current" />
+            <Square className="h-14 w-14 fill-current" />
           </Button>
         )}
         
