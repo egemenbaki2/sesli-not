@@ -118,13 +118,20 @@ export const VoiceRecorder = ({ onTranscriptionComplete }: VoiceRecorderProps) =
         throw new Error(data.error);
       }
 
-      if (!data?.text) {
-        console.error('Metin bulunamadı:', data);
-        throw new Error('Transkripsiyon sonucu alınamadı');
+      const transcribedText = data?.text?.trim() || '';
+      
+      if (transcribedText.length === 0) {
+        console.log('Boş metin döndü, ses algılanmadı');
+        toast({
+          title: "Uyarı",
+          description: "Ses algılanamadı. Lütfen tekrar deneyin.",
+          variant: "destructive",
+        });
+        return;
       }
 
-      console.log('Transkripsiyon başarılı:', data.text);
-      onTranscriptionComplete(data.text);
+      console.log('Transkripsiyon başarılı:', transcribedText);
+      onTranscriptionComplete(transcribedText);
       toast({
         title: "Başarılı!",
         description: "Ses metne dönüştürüldü.",

@@ -88,8 +88,18 @@ serve(async (req) => {
     console.log('Transkripsiyon başarılı, metin uzunluğu:', result.text?.length || 0);
     console.log('Metin:', result.text);
 
+    // Eğer metin çok kısa veya boş ise, ses duyulmamış olabilir
+    const transcribedText = result.text?.trim() || '';
+    if (transcribedText.length < 3) {
+      console.log('Metin çok kısa veya boş, ses algılanmadı');
+      return new Response(
+        JSON.stringify({ text: '' }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
     return new Response(
-      JSON.stringify({ text: result.text }),
+      JSON.stringify({ text: transcribedText }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
 

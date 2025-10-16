@@ -125,9 +125,8 @@ export const CategoryManager = ({ onCategoriesChange }: { onCategoriesChange: ()
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button variant="ghost" size="sm">
-          <FolderOpen className="h-4 w-4 mr-2" />
-          Kategoriler
+        <Button variant="ghost" size="icon" title="Kategoriler">
+          <FolderOpen className="h-5 w-5" />
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[500px]">

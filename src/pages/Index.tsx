@@ -8,7 +8,7 @@ import { CategoryManager } from '@/components/CategoryManager';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { SearchBar } from '@/components/SearchBar';
 import { Button } from '@/components/ui/button';
-import { LogOut, Mic, Menu } from 'lucide-react';
+import { LogOut, Mic, Menu, RefreshCw } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Badge } from '@/components/ui/badge';
 import { useSidebar } from '@/components/ui/sidebar';
@@ -41,8 +41,6 @@ const Index = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const { toggleSidebar } = useSidebar();
-  const [userEmail, setUserEmail] = useState<string>("");
-  const [userId, setUserId] = useState<string>("");
 
   useEffect(() => {
     checkAuth();
@@ -74,10 +72,7 @@ const Index = () => {
     const { data: { session } } = await supabase.auth.getSession();
     if (!session) {
       navigate('/auth');
-      return;
     }
-    setUserEmail(session.user.email ?? "");
-    setUserId(session.user.id);
   };
 
   const fetchNotes = async () => {
@@ -299,31 +294,29 @@ const Index = () => {
     <div className="min-h-screen bg-gradient-to-br from-primary/5 via-background to-accent/5" role="main">
       <header className="border-b bg-card/50 backdrop-blur-sm sticky top-0 z-40">
         <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center gap-3">
-              <Button variant="ghost" size="icon" onClick={toggleSidebar}>
-                <Menu className="h-5 w-5" />
+          <div className="flex items-center justify-between mb-4 gap-2">
+            <div className="flex items-center gap-2 md:gap-3 min-w-0 flex-1">
+              <Button variant="ghost" size="icon" onClick={toggleSidebar} className="h-12 w-12 flex-shrink-0">
+                <Menu className="h-7 w-7" />
               </Button>
-              <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
+              <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0">
                 <Mic className="w-5 h-5 text-primary" />
               </div>
-              <div>
-                <h1 className="text-xl font-bold">Sesli Notlar</h1>
+              <div className="min-w-0 flex-1">
+                <h1 className="text-lg md:text-xl font-bold truncate">Sesli Notlar</h1>
                 <p className="text-xs text-muted-foreground">
                   {filteredNotes.length} not
                 </p>
               </div>
             </div>
-            <div className="flex items-center gap-2">
-              {userEmail && (
-                <Badge variant="outline" className="hidden sm:inline-flex">{userEmail}</Badge>
-              )}
-              <Button variant="outline" size="sm" onClick={fetchNotes}>Yenile</Button>
+            <div className="flex items-center gap-1 md:gap-2 flex-shrink-0">
+              <Button variant="ghost" size="icon" onClick={fetchNotes} title="Yenile">
+                <RefreshCw className="h-5 w-5" />
+              </Button>
               <CategoryManager onCategoriesChange={fetchCategories} />
               <ThemeToggle />
-              <Button variant="ghost" size="sm" onClick={handleSignOut}>
-                <LogOut className="h-4 w-4 mr-2" />
-                Çıkış
+              <Button variant="ghost" size="icon" onClick={handleSignOut} title="Çıkış">
+                <LogOut className="h-5 w-5" />
               </Button>
             </div>
           </div>

@@ -25,24 +25,24 @@ export function AppSidebar() {
   const isCollapsed = state === 'collapsed';
 
   return (
-    <Sidebar className={isCollapsed ? 'w-16' : 'w-64'} collapsible="offcanvas">
-      <SidebarContent className="pt-4">
+    <Sidebar className={isCollapsed ? 'w-16' : 'w-64 bg-zinc-800 dark:bg-zinc-900'} collapsible="offcanvas">
+      <SidebarContent className="pt-4 bg-zinc-800 dark:bg-zinc-900">
         <SidebarGroup>
           <SidebarGroupContent>
-            <SidebarMenu>
+            <SidebarMenu className="gap-2">
               {menuItems.map((item) => (
                 <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton asChild>
+                  <SidebarMenuButton asChild className="py-6">
                     <NavLink
                       to={item.url}
                       end
                       className={({ isActive }) =>
                         isActive
-                          ? 'bg-primary/10 text-primary font-medium'
-                          : 'hover:bg-muted/50'
+                          ? 'bg-primary/20 text-primary font-semibold text-base'
+                          : 'hover:bg-zinc-700 dark:hover:bg-zinc-800 text-zinc-100 text-base'
                       }
                     >
-                      <item.icon className="h-5 w-5" />
+                      <item.icon className="h-6 w-6" />
                       {!isCollapsed && <span>{item.title}</span>}
                     </NavLink>
                   </SidebarMenuButton>
