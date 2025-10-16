@@ -45,25 +45,55 @@ export const VoiceRecorder = ({ onTranscriptionComplete }: VoiceRecorderProps) =
   const startRecording = async () => {
     try {
       let stream: MediaStream;
-      
+
       if (audioSource === 'system') {
-        // Sistem sesi için getDisplayMedia kullan (video gerekli, sonra durdurulacak)
-        stream = await navigator.mediaDevices.getDisplayMedia({ 
+        if (!('getDisplayMedia' in navigator.mediaDevices)) {
+          throw new Error('SYSTEM_NOT_SUPPORTED');
+        }
+        // Sistem sesi için getDisplayMedia kullan (video gerekli)
+        const constraints: any = {
           audio: {
             echoCancellation: false,
             noiseSuppression: false,
-            autoGainControl: false
+            autoGainControl: false,
+            // Bazı tarayıcılarda sekme sesi için gereklidir (ignore if unsupported)
+            systemAudio: 'include',
+            suppressLocalAudioPlayback: true,
           },
-          video: true
-        });
-        
-        // Video track'leri durdur, sadece ses kullan
+          video: {
+            frameRate: 1,
+            width: 1,
+            height: 1,
+            // Kullanıcıya sekme seçtirirken başarılı olma olasılığını artır
+            displaySurface: 'browser',
+            preferCurrentTab: true,
+          } as any,
+        };
+
+        stream = await navigator.mediaDevices.getDisplayMedia(constraints);
+
+        // Audio track var mı kontrol et
+        const hasAudio = stream.getAudioTracks().length > 0;
+        if (!hasAudio) {
+          stream.getTracks().forEach(t => t.stop());
+          const err: any = new Error('NO_SYSTEM_AUDIO');
+          err.code = 'NO_SYSTEM_AUDIO';
+          throw err;
+        }
+
+        // Video track'leri durdur, yalnızca ses kullan
         stream.getVideoTracks().forEach(track => track.stop());
       } else {
-        // Mikrofon için getUserMedia kullan
-        stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        // Mikrofon için getUserMedia
+        stream = await navigator.mediaDevices.getUserMedia({
+          audio: {
+            echoCancellation: true,
+            noiseSuppression: true,
+            autoGainControl: true,
+          },
+        });
       }
-      
+
       const mediaRecorder = new MediaRecorder(stream, {
         mimeType: 'audio/webm',
       });
@@ -85,15 +115,23 @@ export const VoiceRecorder = ({ onTranscriptionComplete }: VoiceRecorderProps) =
 
       mediaRecorder.start();
       setIsRecording(true);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Ses erişim hatası:', error);
-      toast({
-        title: "Hata",
-        description: audioSource === 'system' 
-          ? "Sistem sesine erişilemedi. Lütfen ekran paylaşımı iznini verin ve ses paylaşımını seçin."
-          : "Mikrofona erişilemedi. Lütfen mikrofon izni verin.",
-        variant: "destructive",
-      });
+      let description = '';
+      if (error?.code === 'NO_SYSTEM_AUDIO') {
+        description = "Sistem sesine erişim sağlanamadı. Lütfen bir tarayıcı sekmesi seçin ve 'Ses paylaş' kutusunu işaretleyin.";
+      } else if (error?.message === 'SYSTEM_NOT_SUPPORTED') {
+        description = 'Bu tarayıcıda ekran/ses paylaşımı desteklenmiyor.';
+      } else if (error?.name === 'NotAllowedError') {
+        description = 'İzin reddedildi. Lütfen ekran paylaşımı iznini verin ve ses paylaşımını seçin.';
+      } else if (error?.name === 'NotFoundError') {
+        description = 'Uygun ses kaynağı bulunamadı.';
+      } else {
+        description = audioSource === 'system'
+          ? "Sistem sesine erişilemedi. Seçim ekranında bir tarayıcı sekmesi seçip 'Ses paylaş' seçeneğini işaretleyin."
+          : 'Mikrofona erişilemedi. Lütfen mikrofon izni verin.';
+      }
+      toast({ title: 'Hata', description, variant: 'destructive' });
     }
   };
 
@@ -184,25 +222,32 @@ export const VoiceRecorder = ({ onTranscriptionComplete }: VoiceRecorderProps) =
     <div className="fixed bottom-8 left-1/2 -translate-x-1/2 z-50">
       <div className="flex flex-col items-center gap-3">
         {!isMobile && !isRecording && (
-          <div className="flex gap-2 mb-2">
-            <Button
-              size="sm"
-              variant={audioSource === 'microphone' ? 'default' : 'outline'}
-              onClick={() => setAudioSource('microphone')}
-              className="gap-2"
-            >
-              <Mic className="h-4 w-4" />
-              Mikrofon
-            </Button>
-            <Button
-              size="sm"
-              variant={audioSource === 'system' ? 'default' : 'outline'}
-              onClick={() => setAudioSource('system')}
-              className="gap-2"
-            >
-              <Monitor className="h-4 w-4" />
-              Sistem Sesi
-            </Button>
+          <div className="flex flex-col items-center gap-1 mb-2">
+            <div className="flex gap-2">
+              <Button
+                size="sm"
+                variant={audioSource === 'microphone' ? 'default' : 'outline'}
+                onClick={() => setAudioSource('microphone')}
+                className="gap-2"
+              >
+                <Mic className="h-4 w-4" />
+                Mikrofon
+              </Button>
+              <Button
+                size="sm"
+                variant={audioSource === 'system' ? 'default' : 'outline'}
+                onClick={() => setAudioSource('system')}
+                className="gap-2"
+              >
+                <Monitor className="h-4 w-4" />
+                Sistem Sesi
+              </Button>
+            </div>
+            {audioSource === 'system' && (
+              <p className="text-xs text-muted-foreground">
+                Bir tarayıcı sekmesi seçin ve 'Ses paylaş' seçeneğini işaretleyin.
+              </p>
+            )}
           </div>
         )}
         
