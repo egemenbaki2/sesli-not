@@ -1,21 +1,26 @@
 import { useState, useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { Mic, Square } from 'lucide-react';
+import { Mic, Square, Monitor } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 interface VoiceRecorderProps {
   onTranscriptionComplete: (text: string) => void;
 }
 
+type AudioSource = 'microphone' | 'system';
+
 export const VoiceRecorder = ({ onTranscriptionComplete }: VoiceRecorderProps) => {
   const [isRecording, setIsRecording] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   const [recordingTime, setRecordingTime] = useState(0);
+  const [audioSource, setAudioSource] = useState<AudioSource>('microphone');
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const chunksRef = useRef<Blob[]>([]);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
   const { toast } = useToast();
+  const isMobile = useIsMobile();
 
   useEffect(() => {
     if (isRecording) {
@@ -39,7 +44,19 @@ export const VoiceRecorder = ({ onTranscriptionComplete }: VoiceRecorderProps) =
 
   const startRecording = async () => {
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      let stream: MediaStream;
+      
+      if (audioSource === 'system') {
+        // Sistem sesi için getDisplayMedia kullan
+        stream = await navigator.mediaDevices.getDisplayMedia({ 
+          audio: true,
+          video: false
+        });
+      } else {
+        // Mikrofon için getUserMedia kullan
+        stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      }
+      
       const mediaRecorder = new MediaRecorder(stream, {
         mimeType: 'audio/webm',
       });
@@ -62,10 +79,12 @@ export const VoiceRecorder = ({ onTranscriptionComplete }: VoiceRecorderProps) =
       mediaRecorder.start();
       setIsRecording(true);
     } catch (error) {
-      console.error('Mikrofon erişim hatası:', error);
+      console.error('Ses erişim hatası:', error);
       toast({
         title: "Hata",
-        description: "Mikrofona erişilemedi. Lütfen mikrofon izni verin.",
+        description: audioSource === 'system' 
+          ? "Sistem sesine erişilemedi. Lütfen ekran paylaşımı iznini verin ve ses paylaşımını seçin."
+          : "Mikrofona erişilemedi. Lütfen mikrofon izni verin.",
         variant: "destructive",
       });
     }
@@ -157,6 +176,29 @@ export const VoiceRecorder = ({ onTranscriptionComplete }: VoiceRecorderProps) =
   return (
     <div className="fixed bottom-8 left-1/2 -translate-x-1/2 z-50">
       <div className="flex flex-col items-center gap-3">
+        {!isMobile && !isRecording && (
+          <div className="flex gap-2 mb-2">
+            <Button
+              size="sm"
+              variant={audioSource === 'microphone' ? 'default' : 'outline'}
+              onClick={() => setAudioSource('microphone')}
+              className="gap-2"
+            >
+              <Mic className="h-4 w-4" />
+              Mikrofon
+            </Button>
+            <Button
+              size="sm"
+              variant={audioSource === 'system' ? 'default' : 'outline'}
+              onClick={() => setAudioSource('system')}
+              className="gap-2"
+            >
+              <Monitor className="h-4 w-4" />
+              Sistem Sesi
+            </Button>
+          </div>
+        )}
+        
         {isRecording && (
           <div className="bg-card/95 backdrop-blur-sm border rounded-full px-6 py-2 shadow-lg">
             <p className="text-sm font-medium text-destructive animate-pulse">
@@ -172,7 +214,11 @@ export const VoiceRecorder = ({ onTranscriptionComplete }: VoiceRecorderProps) =
             disabled={isProcessing}
             className="h-28 w-28 rounded-full shadow-2xl hover:scale-110 transition-all duration-300 bg-destructive hover:bg-destructive/90"
           >
-            <Mic className="h-14 w-14" />
+            {audioSource === 'microphone' ? (
+              <Mic className="h-14 w-14" />
+            ) : (
+              <Monitor className="h-14 w-14" />
+            )}
           </Button>
         ) : (
           <Button
