@@ -47,11 +47,18 @@ export const VoiceRecorder = ({ onTranscriptionComplete }: VoiceRecorderProps) =
       let stream: MediaStream;
       
       if (audioSource === 'system') {
-        // Sistem sesi için getDisplayMedia kullan
+        // Sistem sesi için getDisplayMedia kullan (video gerekli, sonra durdurulacak)
         stream = await navigator.mediaDevices.getDisplayMedia({ 
-          audio: true,
-          video: false
+          audio: {
+            echoCancellation: false,
+            noiseSuppression: false,
+            autoGainControl: false
+          },
+          video: true
         });
+        
+        // Video track'leri durdur, sadece ses kullan
+        stream.getVideoTracks().forEach(track => track.stop());
       } else {
         // Mikrofon için getUserMedia kullan
         stream = await navigator.mediaDevices.getUserMedia({ audio: true });
