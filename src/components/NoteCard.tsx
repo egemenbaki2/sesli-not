@@ -38,12 +38,12 @@ const colors = [
 ];
 
 const colorClasses: Record<string, string> = {
-  blue: 'bg-blue-100 border-blue-300 dark:bg-blue-950 dark:border-blue-800',
-  green: 'bg-green-100 border-green-300 dark:bg-green-950 dark:border-green-800',
-  yellow: 'bg-yellow-100 border-yellow-300 dark:bg-yellow-950 dark:border-yellow-800',
-  red: 'bg-red-100 border-red-300 dark:bg-red-950 dark:border-red-800',
-  purple: 'bg-purple-100 border-purple-300 dark:bg-purple-950 dark:border-purple-800',
-  orange: 'bg-orange-100 border-orange-300 dark:bg-orange-950 dark:border-orange-800',
+  blue: 'bg-blue-50 border-blue-200 dark:bg-blue-950/50 dark:border-blue-800/50 hover:shadow-blue-500/20',
+  green: 'bg-green-50 border-green-200 dark:bg-green-950/50 dark:border-green-800/50 hover:shadow-green-500/20',
+  yellow: 'bg-yellow-50 border-yellow-200 dark:bg-yellow-950/50 dark:border-yellow-800/50 hover:shadow-yellow-500/20',
+  red: 'bg-red-50 border-red-200 dark:bg-red-950/50 dark:border-red-800/50 hover:shadow-red-500/20',
+  purple: 'bg-purple-50 border-purple-200 dark:bg-purple-950/50 dark:border-purple-800/50 hover:shadow-purple-500/20',
+  orange: 'bg-orange-50 border-orange-200 dark:bg-orange-950/50 dark:border-orange-800/50 hover:shadow-orange-500/20',
 };
 
 const colorButtonClasses: Record<string, string> = {
@@ -82,27 +82,27 @@ export const NoteCard = ({
   };
 
   return (
-    <Card className={`${colorClasses[color] || colorClasses.blue} p-4 transition-all hover:shadow-lg`}>
+    <Card className={`${colorClasses[color] || colorClasses.blue} p-5 transition-all duration-300 hover:shadow-xl hover:-translate-y-1 rounded-2xl border-2`}>
       {isEditing ? (
         <div className="space-y-3">
           <Input
             value={editTitle}
             onChange={(e) => setEditTitle(e.target.value)}
             placeholder="Başlık (opsiyonel)"
-            className="bg-background/50"
+            className="bg-background/60 backdrop-blur-sm border-border/50 rounded-xl font-semibold"
           />
           <Textarea
             value={editContent}
             onChange={(e) => setEditContent(e.target.value)}
             placeholder="Not içeriği"
             rows={4}
-            className="bg-background/50"
+            className="bg-background/60 backdrop-blur-sm border-border/50 rounded-xl"
           />
           <div className="flex gap-2">
-            <Button size="sm" onClick={handleSave}>
+            <Button size="sm" onClick={handleSave} className="rounded-xl shadow-md">
               <Check className="h-4 w-4" />
             </Button>
-            <Button size="sm" variant="ghost" onClick={handleCancel}>
+            <Button size="sm" variant="ghost" onClick={handleCancel} className="rounded-xl">
               <X className="h-4 w-4" />
             </Button>
           </div>
@@ -110,17 +110,17 @@ export const NoteCard = ({
       ) : (
         <>
           {title && (
-            <h3 className="font-semibold mb-2 text-foreground">{title}</h3>
+            <h3 className="font-bold mb-3 text-foreground text-lg">{title}</h3>
           )}
-          <p className="text-sm text-foreground/80 whitespace-pre-wrap mb-4">
+          <p className="text-sm text-foreground/80 whitespace-pre-wrap mb-5 leading-relaxed">
             {content}
           </p>
-          <div className="flex gap-2 items-center">
+          <div className="flex gap-1 items-center">
             <Button
               size="sm"
               variant="ghost"
               onClick={() => setIsEditing(true)}
-              className="hover:bg-background/50"
+              className="hover:bg-background/60 rounded-xl transition-all hover:scale-105"
             >
               <Edit2 className="h-4 w-4" />
             </Button>
@@ -129,23 +129,23 @@ export const NoteCard = ({
                 <Button
                   size="sm"
                   variant="ghost"
-                  className="hover:bg-background/50"
+                  className="hover:bg-background/60 rounded-xl transition-all hover:scale-105"
                 >
                   <Palette className="h-4 w-4" />
                 </Button>
               </PopoverTrigger>
-              <PopoverContent className="w-auto p-3">
+              <PopoverContent className="w-auto p-3 rounded-xl shadow-xl border-border/50 backdrop-blur-xl">
                 <div className="flex gap-2">
                   {colors.map((c) => (
                     <button
                       key={c.value}
                       type="button"
                       onClick={() => onColorChange(id, c.value)}
-                      className={`w-8 h-8 rounded-full ${colorButtonClasses[c.value]} ${
+                      className={`w-9 h-9 rounded-xl ${colorButtonClasses[c.value]} ${
                         color === c.value
-                          ? 'ring-2 ring-offset-2 ring-primary'
+                          ? 'ring-2 ring-offset-2 ring-primary scale-110'
                           : ''
-                      } hover:scale-110 transition-transform`}
+                      } hover:scale-110 transition-all shadow-md`}
                       title={c.name}
                     />
                   ))}
@@ -157,21 +157,21 @@ export const NoteCard = ({
                 <Button
                   size="sm"
                   variant="ghost"
-                  className="hover:bg-background/50 ml-auto"
+                  className="hover:bg-background/60 ml-auto rounded-xl transition-all hover:scale-105"
                 >
                   <MoreVertical className="h-4 w-4" />
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
+              <DropdownMenuContent align="end" className="rounded-xl shadow-xl border-border/50 backdrop-blur-xl">
                 {showArchive && onArchive && (
-                  <DropdownMenuItem onClick={() => onArchive(id)}>
+                  <DropdownMenuItem onClick={() => onArchive(id)} className="rounded-lg">
                     <Archive className="h-4 w-4 mr-2" />
                     Arşivle
                   </DropdownMenuItem>
                 )}
                 <DropdownMenuItem
                   onClick={() => onDelete(id)}
-                  className="text-destructive"
+                  className="text-destructive rounded-lg"
                 >
                   <Trash2 className="h-4 w-4 mr-2" />
                   Sil

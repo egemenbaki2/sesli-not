@@ -220,31 +220,31 @@ export const VoiceRecorder = ({ onTranscriptionComplete }: VoiceRecorderProps) =
 
   return (
     <div className="fixed bottom-8 left-1/2 -translate-x-1/2 z-50">
-      <div className="flex flex-col items-center gap-3">
+      <div className="flex flex-col items-center gap-4">
         {!isMobile && !isRecording && (
-          <div className="flex flex-col items-center gap-1 mb-2">
-            <div className="flex gap-2">
+          <div className="flex flex-col items-center gap-2 mb-2">
+            <div className="flex gap-3">
               <Button
                 size="sm"
                 variant={audioSource === 'microphone' ? 'default' : 'outline'}
                 onClick={() => setAudioSource('microphone')}
-                className="gap-2"
+                className="gap-2 rounded-xl shadow-md hover:shadow-lg transition-all hover:scale-105 px-5 py-2"
               >
                 <Mic className="h-4 w-4" />
-                Mikrofon
+                <span className="font-medium">Mikrofon</span>
               </Button>
               <Button
                 size="sm"
                 variant={audioSource === 'system' ? 'default' : 'outline'}
                 onClick={() => setAudioSource('system')}
-                className="gap-2"
+                className="gap-2 rounded-xl shadow-md hover:shadow-lg transition-all hover:scale-105 px-5 py-2"
               >
                 <Monitor className="h-4 w-4" />
-                Sistem Sesi
+                <span className="font-medium">Sistem Sesi</span>
               </Button>
             </div>
             {audioSource === 'system' && (
-              <p className="text-xs text-muted-foreground">
+              <p className="text-xs text-muted-foreground text-center max-w-xs bg-card/80 backdrop-blur-sm px-3 py-2 rounded-xl border border-border/50">
                 Bir tarayıcı sekmesi seçin ve 'Ses paylaş' seçeneğini işaretleyin.
               </p>
             )}
@@ -252,8 +252,8 @@ export const VoiceRecorder = ({ onTranscriptionComplete }: VoiceRecorderProps) =
         )}
         
         {isRecording && (
-          <div className="bg-card/95 backdrop-blur-sm border rounded-full px-6 py-2 shadow-lg">
-            <p className="text-sm font-medium text-destructive animate-pulse">
+          <div className="bg-card/95 backdrop-blur-xl border-2 border-destructive/30 rounded-2xl px-8 py-3 shadow-2xl">
+            <p className="text-base font-bold text-destructive animate-pulse">
               Kayıt yapılıyor • {formatTime(recordingTime)}
             </p>
           </div>
@@ -264,12 +264,12 @@ export const VoiceRecorder = ({ onTranscriptionComplete }: VoiceRecorderProps) =
             size="lg"
             onClick={startRecording}
             disabled={isProcessing}
-            className="h-28 w-28 rounded-full shadow-2xl hover:scale-110 transition-all duration-300 bg-destructive hover:bg-destructive/90"
+            className="h-32 w-32 rounded-full shadow-2xl hover:shadow-primary/50 hover:scale-110 transition-all duration-300 bg-gradient-to-br from-primary to-primary/80 hover:from-primary hover:to-primary/90 border-4 border-primary/20"
           >
             {audioSource === 'microphone' ? (
-              <Mic className="h-14 w-14" />
+              <Mic className="h-16 w-16" />
             ) : (
-              <Monitor className="h-14 w-14" />
+              <Monitor className="h-16 w-16" />
             )}
           </Button>
         ) : (
@@ -277,15 +277,15 @@ export const VoiceRecorder = ({ onTranscriptionComplete }: VoiceRecorderProps) =
             size="lg"
             onClick={stopRecording}
             variant="destructive"
-            className="h-28 w-28 rounded-full shadow-2xl transition-all duration-300 animate-pulse-slow hover:animate-none hover:scale-110"
+            className="h-32 w-32 rounded-full shadow-2xl hover:shadow-destructive/50 transition-all duration-300 animate-pulse-slow hover:animate-none hover:scale-110 border-4 border-destructive/30"
           >
-            <Square className="h-14 w-14 fill-current" />
+            <Square className="h-16 w-16 fill-current" />
           </Button>
         )}
         
         {isProcessing && (
-          <div className="bg-card/95 backdrop-blur-sm border rounded-full px-6 py-2 shadow-lg">
-            <p className="text-sm font-medium text-muted-foreground">İşleniyor...</p>
+          <div className="bg-card/95 backdrop-blur-xl border-2 border-primary/30 rounded-2xl px-8 py-3 shadow-2xl">
+            <p className="text-base font-bold text-primary">İşleniyor...</p>
           </div>
         )}
       </div>

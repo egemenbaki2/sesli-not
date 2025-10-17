@@ -291,31 +291,31 @@ const Index = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-primary/5 via-background to-accent/5" role="main">
-      <header className="border-b bg-card/50 backdrop-blur-sm sticky top-0 z-40">
+    <div className="min-h-screen bg-gradient-to-br from-primary/5 via-background to-accent/10" role="main">
+      <header className="border-b border-border/50 bg-card/80 backdrop-blur-xl sticky top-0 z-40 shadow-sm">
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between mb-4 gap-2">
-            <div className="flex items-center gap-2 md:gap-3 min-w-0 flex-1">
-              <Button variant="ghost" size="icon" onClick={toggleSidebar} className="h-12 w-12 flex-shrink-0">
-                <Menu className="h-7 w-7" />
+            <div className="flex items-center gap-2 md:gap-4 min-w-0 flex-1">
+              <Button variant="ghost" size="icon" onClick={toggleSidebar} className="h-11 w-11 flex-shrink-0 hover:bg-accent/50 transition-colors">
+                <Menu className="h-6 w-6" />
               </Button>
-              <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0">
-                <Mic className="w-5 h-5 text-primary" />
+              <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-primary to-primary/80 flex items-center justify-center flex-shrink-0 shadow-lg">
+                <Mic className="w-6 h-6 text-primary-foreground" />
               </div>
               <div className="min-w-0 flex-1">
-                <h1 className="text-lg md:text-xl font-bold truncate">Sesli Notlar</h1>
-                <p className="text-xs text-muted-foreground">
+                <h1 className="text-xl md:text-2xl font-bold truncate bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">Sesli Notlar</h1>
+                <p className="text-xs md:text-sm text-muted-foreground font-medium">
                   {filteredNotes.length} not
                 </p>
               </div>
             </div>
             <div className="flex items-center gap-1 md:gap-2 flex-shrink-0">
-              <Button variant="ghost" size="icon" onClick={fetchNotes} title="Yenile">
+              <Button variant="ghost" size="icon" onClick={fetchNotes} title="Yenile" className="hover:bg-accent/50 transition-colors">
                 <RefreshCw className="h-5 w-5" />
               </Button>
               <CategoryManager onCategoriesChange={fetchCategories} />
               <ThemeToggle />
-              <Button variant="ghost" size="icon" onClick={handleSignOut} title="Çıkış">
+              <Button variant="ghost" size="icon" onClick={handleSignOut} title="Çıkış" className="hover:bg-accent/50 transition-colors">
                 <LogOut className="h-5 w-5" />
               </Button>
             </div>
@@ -324,12 +324,12 @@ const Index = () => {
         </div>
       </header>
 
-      <main className="container mx-auto px-4 py-8 pb-24">
+      <main className="container mx-auto px-4 py-8 pb-32">
         {categories.length > 0 && (
-          <div className="mb-6 flex gap-2 flex-wrap">
+          <div className="mb-8 flex gap-2 flex-wrap">
             <Badge
               variant={selectedCategoryFilter === null ? 'default' : 'outline'}
-              className="cursor-pointer"
+              className="cursor-pointer hover:scale-105 transition-transform px-4 py-2 text-sm font-medium"
               onClick={() => setSelectedCategoryFilter(null)}
             >
               Tümü ({notes.length})
@@ -340,7 +340,7 @@ const Index = () => {
                 <Badge
                   key={category.id}
                   variant={selectedCategoryFilter === category.id ? 'default' : 'outline'}
-                  className="cursor-pointer"
+                  className="cursor-pointer hover:scale-105 transition-transform px-4 py-2 text-sm font-medium"
                   onClick={() => setSelectedCategoryFilter(category.id)}
                 >
                   {category.name} ({count})
@@ -351,14 +351,14 @@ const Index = () => {
         )}
 
         {filteredNotes.length === 0 ? (
-          <div className="text-center py-16">
-            <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-primary/10 mb-4">
-              <Mic className="w-10 h-10 text-primary" />
+          <div className="text-center py-24">
+            <div className="inline-flex items-center justify-center w-24 h-24 rounded-3xl bg-gradient-to-br from-primary/20 to-primary/10 mb-6 shadow-lg">
+              <Mic className="w-12 h-12 text-primary" />
             </div>
-            <h2 className="text-2xl font-bold mb-2">
+            <h2 className="text-3xl font-bold mb-3 bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
               {selectedCategoryFilter ? 'Bu kategoride not yok' : 'Henüz notun yok'}
             </h2>
-            <p className="text-muted-foreground mb-8">
+            <p className="text-muted-foreground text-lg mb-8 max-w-md mx-auto">
               {selectedCategoryFilter 
                 ? 'Başka bir kategori seçin veya yeni not ekleyin'
                 : 'Aşağıdaki mikrofon butonuna basarak ilk notunu oluştur'}
